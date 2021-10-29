@@ -1,0 +1,34 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>@import rule with layer parsing / serialization</title>
+<link rel="author" href="mailto:xiaochengh@chromium.org">
+<link rel="help" href="https://drafts.csswg.org/css-cascade-5/#at-import">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/css/support/parsing-testcommon.js"></script>
+<script>
+  test_valid_rule('@import url("nonexist.css") layer;');
+  test_valid_rule('@import url("nonexist.css") layer(A);');
+  test_valid_rule('@import url("nonexist.css") layer(A.B);');
+
+  test_valid_rule('@import url(nonexist.css) layer;',
+                  '@import url("nonexist.css") layer;');
+  test_valid_rule('@import url(nonexist.css) layer(A);',
+                  '@import url("nonexist.css") layer(A);');
+  test_valid_rule('@import url(nonexist.css) layer(A.B);',
+                  '@import url("nonexist.css") layer(A.B);');
+
+  test_valid_rule('@import "nonexist.css" layer;',
+                  '@import url("nonexist.css") layer;');
+  test_valid_rule('@import "nonexist.css" layer(A);',
+                  '@import url("nonexist.css") layer(A);');
+  test_valid_rule('@import "nonexist.css" layer(A.B);',
+                  '@import url("nonexist.css") layer(A.B);');
+
+  // Invalid layer declaration doesn't make the rule invalid, but is parsed as
+  // a <general-enclosed> media query that always evaluates to false.
+  test_valid_rule('@import url("nonexist.css") layer(A . B);',
+                  '@import url("nonexist.css") not all;');
+  test_valid_rule('@import url("nonexist.css") layer(A, B, C);',
+                  '@import url("nonexist.css") not all;');
+</script>
