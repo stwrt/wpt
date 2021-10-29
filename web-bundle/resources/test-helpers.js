@@ -179,10 +179,8 @@ function addWebBundleElementAndWaitForError(url, resources, options) {
   return addElementAndWaitForError(element);
 }
 
-function changeWebBundleUrl(element, new_url) {
+function changeWebBundleUrlInPlace(element, new_url) {
   if (window.TEST_WEB_BUNDLE_ELEMENT_TYPE != 'link') {
-    // TODO(crbug.com/1245166): Support changing the web bundle url for <script
-    // type=webbundle>.
     throw new Error(
         'Changing the URL of web bundle is not supported for : ' +
         window.TEST_WEB_BUNDLE_ELEMENT_TYPE);
@@ -190,10 +188,8 @@ function changeWebBundleUrl(element, new_url) {
   element.href= new_url;
 }
 
-function changeWebBundleScopes(element, scopes) {
+function changeWebBundleScopesInPlace(element, scopes) {
   if (window.TEST_WEB_BUNDLE_ELEMENT_TYPE != 'link') {
-    // TODO(crbug.com/1245166): Support changing the web bundle scopes for
-    // <script type=webbundle>.
     throw new Error(
         'Changing the scopes of web bundle is not supported for : ' +
         window.TEST_WEB_BUNDLE_ELEMENT_TYPE);
@@ -204,10 +200,8 @@ function changeWebBundleScopes(element, scopes) {
   }
 }
 
-function changeWebBundleResources(element, resources) {
+function changeWebBundleResourcesInPlace(element, resources) {
   if (window.TEST_WEB_BUNDLE_ELEMENT_TYPE != 'link') {
-    // TODO(crbug.com/1245166): Support changing the web bundle resources for
-    // <script type=webbundle>.
     throw new Error(
         'Changing the resources of web bundle is not supported for : ' +
         window.TEST_WEB_BUNDLE_ELEMENT_TYPE);
@@ -216,4 +210,28 @@ function changeWebBundleResources(element, resources) {
   for (const url of resources) {
     element.resources.add(url);
   }
+}
+
+function applyNewPropertiesToObject(object, new_rule) {
+  if (!new_rule.resources && object.resources)
+    new_rule.resources = object.resources;
+  if (!new_rule.scopes && object.scopes)
+    new_rule.scopes = object.scopes;
+  if (!new_rule.crossOrigin && object.crossOrigin)
+    new_rule.crossOrigin = object.crossOrigin;
+}
+
+function replaceWebBundleRule(element, new_rule) {
+  if (window.TEST_WEB_BUNDLE_ELEMENT_TYPE == 'link') {
+    applyNewPropertiesToObject(element, new_rule);
+    if (!new_rule.url)
+      new_rule.url = element.href;
+  } else {
+    const rule = JSON.parse(element.textContent);
+    applyNewPropertiesToObject(rule, new_rule);
+    if (!new_rule.url)
+      new_rule.url = rule.source;
+  }
+
+  return createWebBundleElement(new_rule.url, new_rule.resources, new_rule);
 }
